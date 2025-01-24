@@ -1,4 +1,4 @@
-# Texas Poker Game——arm64
+# Texas Poker Game——docker_arm64
 
 This is an online Texas Hold'em game, base on TypeScript,Egg,Node.js,Vue
 
