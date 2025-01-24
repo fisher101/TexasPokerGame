@@ -1,18 +1,12 @@
 name: ARM64 Build and Deploy
 
 on:      
-  workflow_dispatch:
-    inputs:
-      build:
-        description: "Build and Push?"
-        required: true
-        default: true
-        type: boolean
-      deploy:
-        description: "Deploy?"
-        required: true
-        default: false
-        type: boolean
+  push:
+    branches:
+      - main  # 触发构建的分支
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build_server:
@@ -32,8 +26,8 @@ jobs:
       - name: Docker Login
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Build & Push Server
         uses: docker/build-push-action@v5
@@ -43,7 +37,7 @@ jobs:
           platforms: linux/arm64  # 强制指定目标架构
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/texas-poker-game:api-arm64-latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/texas-poker-game:api-arm64-latest
 
   build_client:
     name: Build client (ARM64)
@@ -63,7 +57,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Build & Push Client
         uses: docker/build-push-action@v5
@@ -73,21 +67,4 @@ jobs:
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/texas-poker-game:nginx-arm64-latest
-
-  deploy:
-    name: Deploy ARM64
-    runs-on: ubuntu-latest
-    needs: [build_server, build_client]
-    if: ${{ inputs.deploy && !cancelled() }}
-    steps:
-      - name: SSH Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            docker pull lionyuyu/texas-poker-game:api-arm64-latest
-            docker pull lionyuyu/texas-poker-game:nginx-arm64-latest
-            docker-compose -f ${{ secrets.SSH_WORK_DIR }}/docker-compose.arm64.yml up -d
+            ${{ secrets.DOCKER_HUB_USERNAME }}/texas-poker-game:nginx-arm64-latest
