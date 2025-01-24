@@ -1,4 +1,5 @@
-FROM node:18-alpine AS build
+# 构建阶段
+FROM --platform=linux/arm64 node:18-alpine AS build
 
 WORKDIR /app
 COPY . .
@@ -10,7 +11,8 @@ RUN sed -i "s/IDENTIFY_VERSION_KEY/${IDENTIFY_VERSION_KEY:=tiger}/g" /app/src/ap
 ARG NODE_ENV
 RUN yarn build
 
-FROM node:18-alpine
+# 运行阶段
+FROM --platform=linux/arm64 node:18-alpine
 ARG NODE_ENV
 
 WORKDIR /app
