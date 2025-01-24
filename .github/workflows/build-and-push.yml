@@ -53,8 +53,7 @@ jobs:
             IDENTIFY_VERSION_KEY=${{ github.sha }}
           push: true
           tags: |
-            lionyuyu/texas-poker-game:api-latest
-            lionyuyu/texas-poker-game:api-${{ github.event.release.tag_name || env.commit_date }}
+            fisher101/texas-poker-game:api-latest
 
   build_client:
     name: Build client docker and push.
@@ -94,25 +93,5 @@ jobs:
             IDENTIFY_VERSION_KEY=${{ github.sha }}
           push: true
           tags: |
-            lionyuyu/texas-poker-game:nginx-latest
-            lionyuyu/texas-poker-game:nginx-${{ github.event.release.tag_name || env.commit_date }}
+            fisher101/texas-poker-game:nginx-latest
 
-  deploy:
-    name: Deploy To Server
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: ${{ !cancelled() }}
-    needs: [build_server, build_client]
-    steps:
-      - name: deploy
-        uses: appleboy/ssh-action@v1.0.3
-        if: ${{ inputs.deploy }}
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          timeout: 30m
-          command_timeout: 30m
-          script: |
-            cd ${{ secrets.SSH_WORK_DIR }} && make pull && make start
